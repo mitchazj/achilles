@@ -1,7 +1,7 @@
 # achilles
 🌿 A light, focused, &amp; speedy virtual browser for .NET (inspired by Golang's Surf library)
 
-pre-alpha software
+pre-alpha software. wrote this in uni for a side project, never got around to cleaning it up
 
 ### TODO:
 - [ ] add tests
