@@ -8,17 +8,17 @@ using HtmlAgilityPack;
 namespace achilles;
 
 public class Achilles {
-    public bool AllowAutoRedirect = true;
     public int Timeout = 1500;
-
-    public Uri Url { get; private set; }
-    public string Title { get => htmlDocument.DocumentNode.SelectSingleNode("//head/title").InnerHtml; }
-    public string Body { get => htmlDocument.DocumentNode.OuterHtml; }
+    public bool AllowAutoRedirect = true;
 
     public AchillesHistory History = new AchillesHistory();
     public CookieContainer Cookies = new CookieContainer();
     public AssetCollection Assets = new AssetCollection();
     public KeyCollection Keys = new KeyCollection();
+
+    public Uri Url { get; private set; }
+    public string? Title { get => htmlDocument.DocumentNode.SelectSingleNode("//head/title")?.InnerHtml; }
+    public string Body { get => htmlDocument.DocumentNode.OuterHtml; }
 
     public byte[] FileData = new byte[0];
     public bool IsFile = false;

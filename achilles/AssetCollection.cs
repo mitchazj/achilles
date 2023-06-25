@@ -2,6 +2,9 @@ using HtmlAgilityPack;
 
 namespace achilles {
     public class AssetCollection : List<Asset> {
+        // TODO: performance profiling
+        // surely there's a faster way to do these? idk
+
         // Quick Accessors
         public List<StylesheetAsset> Stylesheets { get => this.FindAll(a => a.Type == AssetType.Stylesheet).Cast<StylesheetAsset>().ToList(); }
         public List<ImageAsset> Images { get => this.FindAll(a => a.Type == AssetType.Image).Cast<ImageAsset>().ToList(); }

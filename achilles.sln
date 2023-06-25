@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "achilles.Tests", "achilles.Tests\achilles.Tests.csproj", "{DCD0D7A4-6733-45C0-9A95-D7CCF4226271}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "achilles", "achilles\achilles.csproj", "{772E53F2-5AB5-4540-BBE4-4FA0738E0991}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{DCD0D7A4-6733-45C0-9A95-D7CCF4226271}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DCD0D7A4-6733-45C0-9A95-D7CCF4226271}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DCD0D7A4-6733-45C0-9A95-D7CCF4226271}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DCD0D7A4-6733-45C0-9A95-D7CCF4226271}.Release|Any CPU.Build.0 = Release|Any CPU
+		{772E53F2-5AB5-4540-BBE4-4FA0738E0991}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{772E53F2-5AB5-4540-BBE4-4FA0738E0991}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{772E53F2-5AB5-4540-BBE4-4FA0738E0991}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{772E53F2-5AB5-4540-BBE4-4FA0738E0991}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

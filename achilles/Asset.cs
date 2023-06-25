@@ -13,9 +13,12 @@ namespace achilles {
         public HtmlNode Parent { get => Node.ParentNode; }
 
         public string Text { get => Node.InnerText; }
-        public string Id { get => Node.GetAttributeValue("id", "<not set>"); }
-        public string Class { get => Node.GetAttributeValue("class", "<not set>"); }
+        public string Id { get => Node.GetAttributeValue("id", ""); }
+        public string Class { get => Node.GetAttributeValue("class", ""); }
 
+        // TODO: should there be a default AssetType?
+        // Note: this exists so that it can be overridden
+        // by children implementations
         public virtual AssetType Type { get; }
 
         public Asset(HtmlNode htmlNode) {
@@ -28,7 +31,8 @@ namespace achilles {
 
         public override AssetType Type { get => AssetType.Form; }
 
-        public string Action { get => this.Node.GetAttributeValue("action", "<not set>"); }
+        public string Action { get => this.Node.GetAttributeValue("action", ""); }
+
         public List<HtmlNode> Fields {
             get => this.Node.Descendants("input").Where(node => {
                 string type = node.GetAttributeValue("type", "");
@@ -65,7 +69,7 @@ namespace achilles {
     public class ImageAsset : Asset {
         public ImageAsset(HtmlNode htmlNode) : base(htmlNode) { }
         public override AssetType Type { get => AssetType.Image; }
-        public string Src { get => this.Node.GetAttributeValue("src", "<not set>"); }
+        public string Src { get => this.Node.GetAttributeValue("src", ""); }
     }
 
     public class LinkAsset : Asset {
