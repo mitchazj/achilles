@@ -7,8 +7,7 @@ public class SearchDuckDuckGo {
     [Fact]
     public void LoadDuckDuckGo() {
         Achilles achilles = new Achilles();
-        // Assert.(achilles.AllowAutoRedirect
-        // achilles.Fetch("https://duckduckgo.com/");
-        // Assert.Equal("DuckDuckGo — Privacy, simplified.", achilles.Title);
+        achilles.Fetch("https://duckduckgo.com/");
+        Assert.Equal("DuckDuckGo — Privacy, simplified.", achilles.Title);
     }
 }
