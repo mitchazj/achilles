@@ -1,4 +1,5 @@
 using System.Reflection;
+using System.Text.RegularExpressions;
 using FluentAssertions;
 using HtmlAgilityPack;
 using Xunit.Abstractions;
@@ -56,5 +57,22 @@ public class SimpleUnit {
         achilles.Assets.Links.FindAll(l => l.Class == "result__a").ForEach(link => { output.WriteLine(link.Text); });
         var links = achilles.Assets.Links.FindAll(l => l.Class == "result__a");
         links.Should().NotBeEmpty();
+    }
+
+    [Fact]
+    public void TrendingRepos() {
+        Achilles achilles = new Achilles();
+        var links = achilles.Fetch("https://github.com/trending").Assets.Links
+            .FindAll(a => a.Parent.GetAttributeValue("class", "") == "h3 lh-condensed");
+        links.ForEach(a => { output.WriteLine("(" + Regex.Replace(a.Text, @"\s+", " ").Trim() + ") " + a.Href); });
+        links.Should().NotBeEmpty();
+    }
+
+    [Fact]
+    public void QantasMoney()
+    {
+        Achilles achilles = new Achilles();
+        var links = achilles.Fetch("https://www.qantasmoney.com/account/").Assets.Links;
+        true.Should().BeTrue();
     }
 }
