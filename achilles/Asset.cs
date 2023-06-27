@@ -1,3 +1,4 @@
+using System.Net;
 using HtmlAgilityPack;
 
 namespace achilles {
@@ -12,7 +13,7 @@ namespace achilles {
         public HtmlNode Node { get; set; }
         public HtmlNode Parent { get => Node.ParentNode; }
 
-        public string Text { get => Node.InnerText; }
+        public string Text { get => WebUtility.HtmlDecode(Node.InnerText); }
         public string Id { get => Node.GetAttributeValue("id", ""); }
         public string Class { get => Node.GetAttributeValue("class", ""); }
 

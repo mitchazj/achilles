@@ -1,10 +1,17 @@
 using System.Reflection;
 using FluentAssertions;
 using HtmlAgilityPack;
+using Xunit.Abstractions;
 
 namespace achilles.Tests;
 
 public class SimpleUnit {
+    private readonly ITestOutputHelper output;
+
+    public SimpleUnit(ITestOutputHelper output) {
+        this.output = output;
+    }
+
     [Fact]
     public void AutoRedirectOnByDefault() {
         Achilles achilles = new Achilles();
@@ -38,5 +45,16 @@ public class SimpleUnit {
         Achilles achilles = new Achilles();
         achilles.Fetch("https://duckduckgo.com/");
         Assert.Equal("DuckDuckGo — Privacy, simplified.", achilles.Title);
+    }
+
+    [Fact]
+    public void SearchDuckDuckGo() {
+        Achilles achilles = new Achilles();
+        achilles.Fetch("https://html.duckduckgo.com")
+            .Assets.Forms[0].Fill("q", "George Washington");
+        achilles.Submit(achilles.Assets.Forms[0]);
+        achilles.Assets.Links.FindAll(l => l.Class == "result__a").ForEach(link => { output.WriteLine(link.Text); });
+        var links = achilles.Assets.Links.FindAll(l => l.Class == "result__a");
+        links.Should().NotBeEmpty();
     }
 }
