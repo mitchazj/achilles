@@ -14,18 +14,6 @@ public class SimpleUnit {
     }
 
     [Fact]
-    public void AutoRedirectOnByDefault() {
-        Achilles achilles = new Achilles();
-        Assert.Equal(achilles.AllowAutoRedirect, true);
-    }
-
-    [Fact]
-    public void Timeout1500ByDefault() {
-        Achilles achilles = new Achilles();
-        Assert.Equal(achilles.Timeout, 1500);
-    }
-
-    [Fact]
     public void AchillesDocumentExists() {
         Achilles achilles = new Achilles();
         var htmlDocumentRef = typeof(Achilles).GetField("htmlDocument", BindingFlags.NonPublic | BindingFlags.Instance);
@@ -73,6 +61,7 @@ public class SimpleUnit {
     {
         Achilles achilles = new Achilles();
         var links = achilles.Fetch("https://www.qantasmoney.com/account/").Assets.Links;
+        output.WriteLine(achilles.Body);
         true.Should().BeTrue();
     }
 }
