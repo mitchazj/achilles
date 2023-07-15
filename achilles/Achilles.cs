@@ -18,9 +18,11 @@ public class Achilles {
     public KeyCollection Keys = new KeyCollection();
 
     public Uri Url { get; private set; }
+
     public string Body {
         get => htmlDocument.DocumentNode.OuterHtml;
     }
+
     public string? Title {
         get => htmlDocument.DocumentNode.SelectSingleNode("//head/title")?.InnerHtml;
     }
@@ -195,6 +197,10 @@ public class Achilles {
     //     }
     // }
 
+    public AchillesAdvanced MakeAdvanced() {
+        return new AchillesAdvanced(this);
+    }
+
     private async Task<HttpResponseMessage> Get(Uri url) {
         // TODO: make this better - why are there 3? shouldn't there be a config for this?
         int error_tries = 0;
@@ -235,16 +241,16 @@ public class Achilles {
         if (httpResponse.Content.Headers.ContentEncoding.Contains("gzip")) {
             // Decompress the G-Zipped response content
             using (var decompressedStream =
-                    new GZipStream(await httpResponse.Content.ReadAsStreamAsync(), CompressionMode.Decompress))
-                using (var decompressedContent = new StreamReader(decompressedStream)) {
-                    responseContent = await decompressedContent.ReadToEndAsync();
-                }
+                   new GZipStream(await httpResponse.Content.ReadAsStreamAsync(), CompressionMode.Decompress))
+            using (var decompressedContent = new StreamReader(decompressedStream)) {
+                responseContent = await decompressedContent.ReadToEndAsync();
+            }
         }
         else if (httpResponse.Content.Headers.ContentEncoding.Contains("br")) {
             // Decompress the Brotli-compressed response content
             using (var decompressedStream = new MemoryStream()) {
                 using (var brotliStream = new BrotliStream(await httpResponse.Content.ReadAsStreamAsync(),
-                        CompressionMode.Decompress)) {
+                           CompressionMode.Decompress)) {
                     await brotliStream.CopyToAsync(decompressedStream);
                 }
 
@@ -257,17 +263,17 @@ public class Achilles {
         else if (httpResponse.Content.Headers.ContentEncoding.Contains("deflate")) {
             // Decompress the Deflate-compressed response content
             using (var decompressedStream = new DeflateStream(await httpResponse.Content.ReadAsStreamAsync(),
-                    CompressionMode.Decompress))
-                using (var decompressedContent = new StreamReader(decompressedStream)) {
-                    responseContent = await decompressedContent.ReadToEndAsync();
-                }
+                       CompressionMode.Decompress))
+            using (var decompressedContent = new StreamReader(decompressedStream)) {
+                responseContent = await decompressedContent.ReadToEndAsync();
+            }
         }
         else if (httpResponse.Content.Headers.ContentEncoding.Contains("zlib")) {
             // TODO: not 100% sure that this is accurate. Write a unit-test to check
             // Decompress the Zlib-compressed response content
             using (var decompressedStream = new MemoryStream()) {
                 using (var zlibStream = new DeflateStream(await httpResponse.Content.ReadAsStreamAsync(),
-                        CompressionMode.Decompress)) {
+                           CompressionMode.Decompress)) {
                     zlibStream.CopyTo(decompressedStream);
                 }
 

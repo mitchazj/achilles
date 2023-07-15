@@ -57,11 +57,16 @@ public class SimpleUnit {
     }
 
     [Fact]
-    public void QantasMoney()
-    {
+    public void QantasMoney() {
         Achilles achilles = new Achilles();
         var links = achilles.Fetch("https://www.qantasmoney.com/account/").Assets.Links;
         output.WriteLine(achilles.Body);
         true.Should().BeTrue();
+    }
+
+    [Fact]
+    public void Screenshot() {
+        var achilles = new Achilles().MakeAdvanced();
+        achilles.Screenshot();
     }
 }
