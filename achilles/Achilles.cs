@@ -18,17 +18,15 @@ public class Achilles {
     public KeyCollection Keys = new KeyCollection();
 
     public Uri Url { get; private set; }
-
+    public string Body {
+        get => htmlDocument.DocumentNode.OuterHtml;
+    }
     public string? Title {
         get => htmlDocument.DocumentNode.SelectSingleNode("//head/title")?.InnerHtml;
     }
 
-    public string Body {
-        get => htmlDocument.DocumentNode.OuterHtml;
-    }
-
-    public byte[] FileData = new byte[0];
     public bool IsFile = false;
+    public byte[] FileData = new byte[0];
 
     private HtmlDocument htmlDocument = new HtmlDocument();
 
@@ -60,106 +58,6 @@ public class Achilles {
         }
     }
 
-    private static string GetStringFromResponse(HttpWebResponse response) {
-        using (StreamReader streamReader = new StreamReader(response.GetResponseStream())) {
-            // TODO: figure out what purpose this code served
-            // .Replace("&#x27;", "'").Replace("&amp;", "&")
-            // return WebUtility.HtmlDecode(streamReader.ReadToEnd());
-            return streamReader.ReadToEnd();
-        }
-    }
-
-    private static byte[] GetBytesFromResponse(HttpWebResponse response) {
-        MemoryStream ms = new MemoryStream();
-        response.GetResponseStream().CopyTo(ms);
-        return ms.ToArray();
-    }
-
-    private async Task HandleHttpResponse(HttpResponseMessage httpResponse) {
-        // Update Stuff
-        if (httpResponse.Headers.TryGetValues("Set-Cookie", out IEnumerable<string>? cookieValues)) {
-            foreach (string cookieValue in cookieValues) {
-                Cookies.SetCookies(httpResponse.RequestMessage.RequestUri, cookieValue); // Update Cookies
-            }
-        }
-
-        // TODO: not sure if this is right. was AI generated
-        Url = httpResponse.RequestMessage.RequestUri; // Update URL
-
-        // TODO: write unit tests for this and extract into a proper method
-        string responseContent;
-        if (httpResponse.Content.Headers.ContentEncoding.Contains("gzip")) {
-            // Decompress the G-Zipped response content
-            using (var decompressedStream =
-                   new GZipStream(await httpResponse.Content.ReadAsStreamAsync(), CompressionMode.Decompress))
-            using (var decompressedContent = new StreamReader(decompressedStream)) {
-                responseContent = await decompressedContent.ReadToEndAsync();
-            }
-        }
-        else if (httpResponse.Content.Headers.ContentEncoding.Contains("br")) {
-            // Decompress the Brotli-compressed response content
-            using (var decompressedStream = new MemoryStream()) {
-                using (var brotliStream = new BrotliStream(await httpResponse.Content.ReadAsStreamAsync(),
-                           CompressionMode.Decompress)) {
-                    await brotliStream.CopyToAsync(decompressedStream);
-                }
-
-                decompressedStream.Seek(0, SeekOrigin.Begin);
-                using (var decompressedContent = new StreamReader(decompressedStream)) {
-                    responseContent = await decompressedContent.ReadToEndAsync();
-                }
-            }
-        }
-        else if (httpResponse.Content.Headers.ContentEncoding.Contains("deflate")) {
-            // Decompress the Deflate-compressed response content
-            using (var decompressedStream = new DeflateStream(await httpResponse.Content.ReadAsStreamAsync(),
-                       CompressionMode.Decompress))
-            using (var decompressedContent = new StreamReader(decompressedStream)) {
-                responseContent = await decompressedContent.ReadToEndAsync();
-            }
-        }
-        else if (httpResponse.Content.Headers.ContentEncoding.Contains("zlib")) {
-            // TODO: not 100% sure that this is accurate. Write a unit-test to check
-            // Decompress the Zlib-compressed response content
-            using (var decompressedStream = new MemoryStream()) {
-                using (var zlibStream = new DeflateStream(await httpResponse.Content.ReadAsStreamAsync(),
-                           CompressionMode.Decompress)) {
-                    zlibStream.CopyTo(decompressedStream);
-                }
-
-                decompressedStream.Seek(0, SeekOrigin.Begin);
-                using (var decompressedContent = new StreamReader(decompressedStream)) {
-                    responseContent = await decompressedContent.ReadToEndAsync();
-                }
-            }
-        }
-        else {
-            responseContent = await httpResponse.Content.ReadAsStringAsync();
-        }
-
-
-        // TODO: make this more robust
-        if (httpResponse.Content.Headers.ContentType.MediaType.Contains("html")) {
-            htmlDocument.LoadHtml(responseContent); // Update Document
-            Assets = AssetCollection.FromDocument(htmlDocument); // Refresh Assets
-            IsFile = false;
-        }
-        else if (httpResponse.Content.Headers.ContentType.MediaType.Contains("application/xml")) {
-            XmlDocument doc = new XmlDocument();
-            doc.LoadXml(responseContent); // Unpack HTML from response
-            htmlDocument.LoadHtml(doc.InnerText); // Update Document
-            Assets = AssetCollection.FromDocument(htmlDocument); // Refresh Assets
-            IsFile = false;
-        }
-        else {
-            FileData = Encoding.UTF8.GetBytes(responseContent);
-            IsFile = true;
-        }
-
-        // Update History
-        History.Add(new AchillesVisit(Url, DateTime.Now, Cookies.GetCookies(Url)));
-    }
-
     public static async Task<HttpResponseMessage> HttpGet(Uri url, CookieContainer cookieContainer) {
         // TODO: create a more modern and up-to-date version of these headers
         // also provide a mapping enum for more than one type
@@ -184,7 +82,6 @@ public class Achilles {
         HttpResponseMessage response = await client.GetAsync(url);
         return response;
     }
-
 
     public static async Task<HttpResponseMessage> HttpPost(Uri url, CookieContainer cookieContainer, string referer,
         NameValueCollection postData) {
@@ -212,7 +109,6 @@ public class Achilles {
         HttpResponseMessage response = await client.PostAsync(url, formContent);
         return response;
     }
-
 
     public Achilles FetchNoVisit(Uri url) {
         Achilles achilles = new Achilles();
@@ -283,6 +179,21 @@ public class Achilles {
         return this;
     }
 
+    public async void Download(Uri url, string filename) {
+        await Task.Run(() => HttpGet(url, this.Cookies));
+    }
+
+    public async void Download(string url, string filename) {
+        await Task.Run(() => Download(new Uri(url), filename));
+    }
+
+    // public async IEnumerable<Achilles> DownloadAll(List<string> urls, string folder) {
+    //     foreach (string url in urls) {
+    //         Achilles a = new Achilles(); // Still more to do, needs the same Cookie stash
+    //         throw new NotImplementedException();
+    //         yield return a.Fetch(url);
+    //     }
+    // }
 
     private async Task<HttpResponseMessage> Get(Uri url) {
         // TODO: make this better - why are there 3? shouldn't there be a config for this?
@@ -307,20 +218,89 @@ public class Achilles {
         return httpResponseMessage;
     }
 
+    // TODO: clean up
+    private async Task HandleHttpResponse(HttpResponseMessage httpResponse) {
+        // Update Stuff
+        if (httpResponse.Headers.TryGetValues("Set-Cookie", out IEnumerable<string>? cookieValues)) {
+            foreach (string cookieValue in cookieValues) {
+                Cookies.SetCookies(httpResponse.RequestMessage.RequestUri, cookieValue); // Update Cookies
+            }
+        }
 
-    public async void Download(Uri url, string filename) {
-        await Task.Run(() => HttpGet(url, this.Cookies));
+        // TODO: not sure if this is right. was AI generated
+        Url = httpResponse.RequestMessage.RequestUri; // Update URL
+
+        // TODO: write unit tests for this and extract into a proper method
+        string responseContent;
+        if (httpResponse.Content.Headers.ContentEncoding.Contains("gzip")) {
+            // Decompress the G-Zipped response content
+            using (var decompressedStream =
+                    new GZipStream(await httpResponse.Content.ReadAsStreamAsync(), CompressionMode.Decompress))
+                using (var decompressedContent = new StreamReader(decompressedStream)) {
+                    responseContent = await decompressedContent.ReadToEndAsync();
+                }
+        }
+        else if (httpResponse.Content.Headers.ContentEncoding.Contains("br")) {
+            // Decompress the Brotli-compressed response content
+            using (var decompressedStream = new MemoryStream()) {
+                using (var brotliStream = new BrotliStream(await httpResponse.Content.ReadAsStreamAsync(),
+                        CompressionMode.Decompress)) {
+                    await brotliStream.CopyToAsync(decompressedStream);
+                }
+
+                decompressedStream.Seek(0, SeekOrigin.Begin);
+                using (var decompressedContent = new StreamReader(decompressedStream)) {
+                    responseContent = await decompressedContent.ReadToEndAsync();
+                }
+            }
+        }
+        else if (httpResponse.Content.Headers.ContentEncoding.Contains("deflate")) {
+            // Decompress the Deflate-compressed response content
+            using (var decompressedStream = new DeflateStream(await httpResponse.Content.ReadAsStreamAsync(),
+                    CompressionMode.Decompress))
+                using (var decompressedContent = new StreamReader(decompressedStream)) {
+                    responseContent = await decompressedContent.ReadToEndAsync();
+                }
+        }
+        else if (httpResponse.Content.Headers.ContentEncoding.Contains("zlib")) {
+            // TODO: not 100% sure that this is accurate. Write a unit-test to check
+            // Decompress the Zlib-compressed response content
+            using (var decompressedStream = new MemoryStream()) {
+                using (var zlibStream = new DeflateStream(await httpResponse.Content.ReadAsStreamAsync(),
+                        CompressionMode.Decompress)) {
+                    zlibStream.CopyTo(decompressedStream);
+                }
+
+                decompressedStream.Seek(0, SeekOrigin.Begin);
+                using (var decompressedContent = new StreamReader(decompressedStream)) {
+                    responseContent = await decompressedContent.ReadToEndAsync();
+                }
+            }
+        }
+        else {
+            responseContent = await httpResponse.Content.ReadAsStringAsync();
+        }
+
+
+        // TODO: make this more robust
+        if (httpResponse.Content.Headers.ContentType.MediaType.Contains("html")) {
+            htmlDocument.LoadHtml(responseContent); // Update Document
+            Assets = AssetCollection.FromDocument(htmlDocument); // Refresh Assets
+            IsFile = false;
+        }
+        else if (httpResponse.Content.Headers.ContentType.MediaType.Contains("application/xml")) {
+            XmlDocument doc = new XmlDocument();
+            doc.LoadXml(responseContent); // Unpack HTML from response
+            htmlDocument.LoadHtml(doc.InnerText); // Update Document
+            Assets = AssetCollection.FromDocument(htmlDocument); // Refresh Assets
+            IsFile = false;
+        }
+        else {
+            FileData = Encoding.UTF8.GetBytes(responseContent);
+            IsFile = true;
+        }
+
+        // Update History
+        History.Add(new AchillesVisit(Url, DateTime.Now, Cookies.GetCookies(Url)));
     }
-
-    public async void Download(string url, string filename) {
-        await Task.Run(() => Download(new Uri(url), filename));
-    }
-
-    // public async IEnumerable<Achilles> DownloadAll(List<string> urls, string folder) {
-    //     foreach (string url in urls) {
-    //         Achilles a = new Achilles(); // Still more to do, needs the same Cookie stash
-    //         throw new NotImplementedException();
-    //         yield return a.Fetch(url);
-    //     }
-    // }
 }
