@@ -198,7 +198,7 @@ public class Achilles {
     // }
 
     public AchillesAdvanced MakeAdvanced() {
-        return new AchillesAdvanced(this);
+        return AchillesAdvanced.From(this);
     }
 
     private async Task<HttpResponseMessage> Get(Uri url) {
