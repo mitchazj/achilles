@@ -57,16 +57,49 @@ public class SimpleUnit {
     }
 
     [Fact]
-    public void QantasMoney() {
-        Achilles achilles = new Achilles();
-        var links = achilles.Fetch("https://www.qantasmoney.com/account/").Assets.Links;
-        output.WriteLine(achilles.Body);
-        true.Should().BeTrue();
+    public void Screenshot() {
+        var outputFile = Path.Combine(AppContext.BaseDirectory, "screenshot.png");
+        var fileInfo = new FileInfo(outputFile);
+        if (fileInfo.Exists) {
+            fileInfo.Delete();
+        }
+        var achilles = new Achilles()
+            .Fetch("https://www.google.com/")
+            .MakeAdvanced();
+        achilles.Screenshot(outputFile);
+        output.WriteLine(outputFile);
+        Assert.True(File.Exists(outputFile));
     }
 
+
     [Fact]
-    public void Screenshot() {
-        var achilles = new Achilles().MakeAdvanced();
-        achilles.Screenshot();
+    public void QantasMoney() {
+        var outputFile = Path.Combine(AppContext.BaseDirectory, "qantas.png");
+
+        // TODO: make this and below work by supporting cookie passing
+        // var achilles = new Achilles()
+        //     .MakeAdvanced()
+        //     .Fetch("https://www.qantasmoney.com/account/");
+        // var achilles = new Achilles()
+        //     .Fetch("https://www.qantasmoney.com/account/");
+        //     .MakeAdvanced()
+
+        var achilles = new AchillesAdvanced()
+            .Fetch("https://www.qantasmoney.com/account/")
+            .ExpectWait(WaitType.InputName("verifyCode"))
+            .Assets.Forms[0].Fill("memberId", "")
+            .Assets.Forms[0].Fill("lastName", "")
+            .Assets.Forms[0].Fill("memberPin", "")
+            .Assets.Forms[0].Submit()
+            .Wait();
+//            .ExpectWait(WaitType.NavigationComplete)
+//            .Assets.Forms[0].Fill("verifyCode", getUserInput())
+//            .Assets.Forms[0].Submit()
+//            .Wait();
+
+        achilles.Screenshot(outputFile);
+        output.WriteLine(outputFile);
+
+        true.Should().BeTrue();
     }
 }
